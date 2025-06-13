@@ -7,8 +7,8 @@ from typing import List, Dict, Any, Optional
 import os
 from contextlib import asynccontextmanager
 
-from src.utils.logger import setup_logger
-from src.utils.config import Config
+from utils.logger import setup_logger
+from utils.config import Config
 
 logger = setup_logger(__name__)
 

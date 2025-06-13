@@ -7,12 +7,12 @@ from typing import List, Dict, Optional
 from datetime import datetime, timedelta
 import json
 
-from src.api.uk_market_api import UKMarketAPI
-from src.api.japan_auction_api import JapanAuctionAPI
-from src.api.government_data_api import GovernmentDataAPI
-from src.api.exchange_rate_api import ExchangeRateAPI
-from src.utils.logger import setup_logger
-from src.database.connection import DatabaseConnection
+from api.uk_market_api import UKMarketAPI
+from api.japan_auction_api import JapanAuctionAPI
+from api.government_data_api import GovernmentDataAPI
+from api.exchange_rate_api import ExchangeRateAPI
+from utils.logger import setup_logger
+from database.connection import DatabaseConnection
 
 logger = setup_logger(__name__)
 

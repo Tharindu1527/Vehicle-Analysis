@@ -8,8 +8,8 @@ from typing import List, Dict, Optional
 import json
 from datetime import datetime, timedelta
 
-from src.utils.logger import setup_logger
-from src.utils.config import Config
+from utils.logger import setup_logger
+from utils.config import Config
 
 logger = setup_logger(__name__)
 

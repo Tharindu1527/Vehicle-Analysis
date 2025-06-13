@@ -8,11 +8,11 @@ import schedule
 import time
 from threading import Thread
 
-from src.utils.config import Config
-from src.utils.logger import setup_logger
-from src.data_processing.data_collector import DataCollector
-from src.data_processing.scoring_engine import ScoringEngine
-from src.dashboard.app import create_app
+from utils.config import Config
+from utils.logger import setup_logger
+from data_processing.data_collector import DataCollector
+from data_processing.scoring_engine import ScoringEngine
+from dashboard.app import create_app
 
 logger = setup_logger(__name__)
 

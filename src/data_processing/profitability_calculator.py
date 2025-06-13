@@ -8,8 +8,8 @@ from typing import List, Dict, Tuple, Optional
 from datetime import datetime, timedelta
 import statistics
 
-from src.utils.logger import setup_logger
-from src.database.connection import DatabaseConnection
+from utils.logger import setup_logger
+from database.connection import DatabaseConnection
 
 logger = setup_logger(__name__)
 

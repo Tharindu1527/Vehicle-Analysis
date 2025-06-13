@@ -6,11 +6,11 @@ import asyncio
 from datetime import datetime, timedelta
 import json
 
-from src.utils.config import Config
-from src.utils.logger import setup_logger
-from src.database.connection import DatabaseConnection
-from src.data_processing.profitability_calculator import ProfitabilityCalculator
-from src.data_processing.scoring_engine import ScoringEngine
+from utils.config import Config
+from utils.logger import setup_logger
+from database.connection import DatabaseConnection
+from data_processing.profitability_calculator import ProfitabilityCalculator
+from data_processing.scoring_engine import ScoringEngine
 
 logger = setup_logger(__name__)
 
