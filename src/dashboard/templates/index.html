@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Import Analyzer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center mb-8 text-gray-800">Vehicle Import Analyzer</h1>
+        
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-600">Total Opportunities</h3>
+                <p class="text-3xl font-bold text-blue-600" id="totalOpportunities">-</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-600">High Profit (>20%)</h3>
+                <p class="text-3xl font-bold text-green-600" id="highProfitCount">-</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-600">Avg Profit Margin</h3>
+                <p class="text-3xl font-bold text-purple-600" id="avgProfitMargin">-</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-600">Top Make</h3>
+                <p class="text-2xl font-bold text-orange-600" id="topMake">-</p>
+            </div>
+        </div>
+        
+        <!-- Search Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-4">Search Vehicles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="text" id="searchMake" placeholder="Make (e.g., Toyota)" 
+                       class="border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="searchModel" placeholder="Model (optional)" 
+                       class="border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                <button onclick="searchVehicles()" 
+                        class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">
+                    Search
+                </button>
+            </div>
+        </div>
+        
+        <!-- Results Tabs -->
+        <div class="bg-white rounded-lg shadow-md">
+            <div class="border-b">
+                <nav class="flex space-x-8 px-6">
+                    <button class="tab-button py-4 border-b-2 border-blue-500 text-blue-600 font-medium" 
+                            onclick="showTab('top-opportunities')">Top Opportunities</button>
+                    <button class="tab-button py-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700" 
+                            onclick="showTab('fast-moving')">Fast Moving</button>
+                    <button class="tab-button py-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700" 
+                            onclick="showTab('search-results')">Search Results</button>
+                </nav>
+            </div>
+            
+            <div class="p-6">
+                <!-- Top Opportunities Tab -->
+                <div id="top-opportunities" class="tab-content">
+                    <h3 class="text-xl font-bold mb-4">Top Profit Opportunities</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full table-auto">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Vehicle</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">UK Price</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Landed Cost</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Profit</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Margin %</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Days to Sell</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Score</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Priority</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topOpportunitiesTable" class="divide-y divide-gray-200">
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Fast Moving Tab -->
+                <div id="fast-moving" class="tab-content hidden">
+                    <h3 class="text-xl font-bold mb-4">Fast Moving Vehicles</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full table-auto">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Vehicle</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Days to Sell</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">UK Price</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Profit Margin %</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Demand Score</th>
+                                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Overall Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fastMovingTable" class="divide-y divide-gray-200">
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Search Results Tab -->
+                <div id="search-results" class="tab-content hidden">
+                    <h3 class="text-xl font-bold mb-4">Search Results</h3>
+                    <div id="searchResultsContent">
+                        <p class="text-gray-500">Use the search form above to find specific vehicles.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Refresh Button -->
+        <div class="mt-8 text-center">
+            <button onclick="refreshData()" 
+                    class="bg-green-500 text-white px-8 py-3 rounded-lg hover:bg-green-600 font-medium">
+                Refresh Data
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript functionality
+        let currentTab = 'top-opportunities';
+        
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMarketSummary();
+            loadTopOpportunities();
+            loadFastMoving();
+        });
+        
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.remove('hidden');
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('border-blue-500', 'text-blue-600');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            event.target.classList.remove('border-transparent', 'text-gray-500');
+            event.target.classList.add('border-blue-500', 'text-blue-600');
+            
+            currentTab = tabName;
+        }
+        
+        async function loadMarketSummary() {
+            try {
+                const response = await axios.get('/api/market-summary');
+                if (response.data.success) {
+                    const data = response.data.data;
+                    document.getElementById('totalOpportunities').textContent = data.total_opportunities || '0';
+                    document.getElementById('highProfitCount').textContent = data.high_profit_opportunities || '0';
+                    document.getElementById('avgProfitMargin').textContent = (data.average_profit_margin || 0) + '%';
+                    document.getElementById('topMake').textContent = data.top_performing_make?.make || 'N/A';
+                }
+            } catch (error) {
+                console.error('Error loading market summary:', error);
+            }
+        }
+        
+        async function loadTopOpportunities() {
+            try {
+                const response = await axios.get('/api/top-opportunities?limit=20');
+                if (response.data.success) {
+                    const tableBody = document.getElementById('topOpportunitiesTable');
+                    tableBody.innerHTML = response.data.data.map(item => `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2">
+                                <div class="font-medium">${item.make} ${item.model}</div>
+                                <div class="text-sm text-gray-500">${item.year} • ${item.fuel_type}</div>
+                            </td>
+                            <td class="px-4 py-2">£${(item.avg_uk_selling_price || 0).toLocaleString()}</td>
+                            <td class="px-4 py-2">£${(item.avg_landed_cost || 0).toLocaleString()}</td>
+                            <td class="px-4 py-2 font-medium text-green-600">£${(item.gross_profit || 0).toLocaleString()}</td>
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-1 rounded text-sm ${getProfitMarginClass(item.profit_margin_percent)}">
+                                    ${(item.profit_margin_percent || 0).toFixed(1)}%
+                                </span>
+                            </td>
+                            <td class="px-4 py-2">${(item.avg_days_to_sell || 0).toFixed(0)} days</td>
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-1 rounded text-sm ${getScoreClass(item.final_recommendation_score)}">
+                                    ${(item.final_recommendation_score || 0).toFixed(0)}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-1 rounded text-sm ${getPriorityClass(item.priority)}">
+                                    ${item.priority || 'N/A'}
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading top opportunities:', error);
+            }
+        }
+        
+        async function loadFastMoving() {
+            try {
+                const response = await axios.get('/api/fast-moving?limit=20');
+                if (response.data.success) {
+                    const tableBody = document.getElementById('fastMovingTable');
+                    tableBody.innerHTML = response.data.data.map(item => `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2">
+                                <div class="font-medium">${item.make} ${item.model}</div>
+                                <div class="text-sm text-gray-500">${item.year} • ${item.fuel_type}</div>
+                            </td>
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-1 rounded text-sm ${getDaysClass(item.avg_days_to_sell)}">
+                                    ${(item.avg_days_to_sell || 0).toFixed(0)} days
+                                </span>
+                            </td>
+                            <td class="px-4 py-2">£${(item.avg_uk_selling_price || 0).toLocaleString()}</td>
+                            <td class="px-4 py-2">${(item.profit_margin_percent || 0).toFixed(1)}%</td>
+                            <td class="px-4 py-2">${(item.demand_score || 0).toFixed(0)}</td>
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-1 rounded text-sm ${getScoreClass(item.overall_score)}">
+                                    ${(item.overall_score || 0).toFixed(0)}
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading fast moving vehicles:', error);
+            }
+        }
+        
+        async function searchVehicles() {
+            const make = document.getElementById('searchMake').value.trim();
+            const model = document.getElementById('searchModel').value.trim();
+            
+            if (!make) {
+                alert('Please enter a vehicle make');
+                return;
+            }
+            
+            try {
+                const params = new URLSearchParams({ make });
+                if (model) params.append('model', model);
+                
+                const response = await axios.get(`/api/search?${params}`);
+                if (response.data.success) {
+                    const content = document.getElementById('searchResultsContent');
+                    
+                    if (response.data.data.length === 0) {
+                        content.innerHTML = '<p class="text-gray-500">No results found for your search.</p>';
+                    } else {
+                        content.innerHTML = `
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full table-auto">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Vehicle</th>
+                                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">UK Price</th>
+                                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Profit Margin</th>
+                                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">ROI</th>
+                                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Days to Sell</th>
+                                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Recommendation</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        ${response.data.data.map(item => `
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-2">
+                                                    <div class="font-medium">${item.make} ${item.model}</div>
+                                                    <div class="text-sm text-gray-500">${item.year} • ${item.fuel_type}</div>
+                                                </td>
+                                                <td class="px-4 py-2">£${(item.avg_uk_selling_price || 0).toLocaleString()}</td>
+                                                <td class="px-4 py-2">
+                                                    <span class="px-2 py-1 rounded text-sm ${getProfitMarginClass(item.profit_margin_percent)}">
+                                                        ${(item.profit_margin_percent || 0).toFixed(1)}%
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-2">${(item.roi_percent || 0).toFixed(1)}%</td>
+                                                <td class="px-4 py-2">${(item.avg_days_to_sell || 0).toFixed(0)} days</td>
+                                                <td class="px-4 py-2">
+                                                    <span class="px-2 py-1 rounded text-sm ${getRecommendationClass(item.recommendation_category)}">
+                                                        ${item.recommendation_category || 'N/A'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    }
+                    
+                    // Switch to search results tab
+                    showTab('search-results');
+                }
+            } catch (error) {
+                console.error('Error searching vehicles:', error);
+                alert('Error searching vehicles. Please try again.');
+            }
+        }
+        
+        async function refreshData() {
+            try {
+                const response = await axios.post('/api/refresh-data');
+                if (response.data.success) {
+                    alert('Data refresh initiated successfully!');
+                    // Reload current data
+                    loadMarketSummary();
+                    if (currentTab === 'top-opportunities') {
+                        loadTopOpportunities();
+                    } else if (currentTab === 'fast-moving') {
+                        loadFastMoving();
+                    }
+                }
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+                alert('Error refreshing data. Please try again.');
+            }
+        }
+        
+        // Utility functions for styling
+        function getProfitMarginClass(margin) {
+            if (margin >= 25) return 'bg-green-100 text-green-800';
+            if (margin >= 15) return 'bg-yellow-100 text-yellow-800';
+            if (margin >= 10) return 'bg-orange-100 text-orange-800';
+            return 'bg-red-100 text-red-800';
+        }
+        
+        function getScoreClass(score) {
+            if (score >= 80) return 'bg-green-100 text-green-800';
+            if (score >= 60) return 'bg-yellow-100 text-yellow-800';
+            if (score >= 40) return 'bg-orange-100 text-orange-800';
+            return 'bg-red-100 text-red-800';
+        }
+        
+        function getPriorityClass(priority) {
+            switch(priority) {
+                case 'High': return 'bg-red-100 text-red-800';
+                case 'Medium': return 'bg-yellow-100 text-yellow-800';
+                case 'Low': return 'bg-green-100 text-green-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+        
+        function getDaysClass(days) {
+            if (days <= 14) return 'bg-green-100 text-green-800';
+            if (days <= 30) return 'bg-yellow-100 text-yellow-800';
+            if (days <= 60) return 'bg-orange-100 text-orange-800';
+            return 'bg-red-100 text-red-800';
+        }
+        
+        function getRecommendationClass(category) {
+            switch(category) {
+                case 'Highly Recommended': return 'bg-green-100 text-green-800';
+                case 'Recommended': return 'bg-blue-100 text-blue-800';
+                case 'Consider': return 'bg-yellow-100 text-yellow-800';
+                case 'Not Recommended': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+# config/database.yaml
+# Database Configuration for Vehicle Import Analyzer
+
+# Development Database (SQLite)
+development:
+  driver: sqlite
+  path: ./data/vehicle_import_analyzer_dev.db
+  pool_size: 5
+  timeout: 30
+  check_same_thread: false
+  
+  # SQLite specific settings
+  sqlite:
+    journal_mode: WAL
+    synchronous: NORMAL
+    temp_store: MEMORY
+    mmap_size: 268435456  # 256MB
+    cache_size: 10000
+
+# Test Database
+test:
+  driver: sqlite
+  path: ":memory:"
+  pool_size: 1
+  timeout: 10
+  check_same_thread: false
+
+# Production Database (PostgreSQL)
+production:
+  driver: postgresql
+  host: localhost
+  port: 5432
+  database: vehicle_import_analyzer
+  username: ${DB_USERNAME}
+  password: ${DB_PASSWORD}
+  pool_size: 20
+  max_overflow: 30
+  pool_timeout: 30
+  pool_recycle: 3600
+  
+  # PostgreSQL specific settings
+  postgresql:
+    sslmode: require
+    connect_timeout: 10
+    statement_timeout: 30000
+    idle_in_transaction_session_timeout: 60000
+
+# Backup Configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention_days: 30
+  compression: gzip
+  
+  # Backup locations
+  local:
+    enabled: true
+    path: ./backups/
+  
+  s3:
+    enabled: false
+    bucket: vehicle-analyzer-backups
+    region: us-east-1
+    access_key: ${AWS_ACCESS_KEY}
+    secret_key: ${AWS_SECRET_KEY}
+
+# Migration Settings
+migrations:
+  auto_migrate: false
+  migration_table: schema_migrations
+  lock_timeout: 300
+
+# Performance Settings
+performance:
+  query_timeout: 30
+  slow_query_threshold: 1000  # ms
+  connection_retry_attempts: 3
+  connection_retry_delay: 5
+
+# Monitoring
+monitoring:
+  log_queries: false
+  log_slow_queries: true
+  metrics_enabled: true
+  health_check_interval: 60

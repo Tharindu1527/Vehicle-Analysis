@@ -1,0 +1,115 @@
+# config/config.yaml
+# Vehicle Import Analyzer Configuration
+
+# Database Configuration
+database:
+  path: "vehicle_import_analyzer.db"
+  timeout: 30
+  backup_interval_hours: 24
+
+# API Configuration
+api:
+  rate_limits:
+    autotrader: 1000  # requests per hour
+    motors: 500
+    cargurus: 750
+    uss: 200
+    ju: 150
+    aucnet: 100
+  
+  timeout_seconds: 30
+  retry_attempts: 3
+  retry_delay_seconds: 5
+
+# Data Collection Settings
+data_collection:
+  update_intervals:
+    uk_market_hours: 6
+    japan_auction_hours: 12
+    government_data_hours: 24
+    exchange_rates_hours: 1
+  
+  batch_sizes:
+    uk_listings: 100
+    japan_auctions: 50
+    government_records: 200
+  
+  retention_days:
+    raw_data: 90
+    analysis_results: 365
+    logs: 30
+
+# Analysis Settings
+analysis:
+  profitability:
+    minimum_profit_margin: 5.0  # percent
+    minimum_roi: 10.0  # percent
+    maximum_days_to_sell: 90
+  
+  scoring:
+    weights:
+      profit_margin: 0.25
+      roi: 0.25
+      risk_score: 0.20
+      demand_score: 0.20
+      speed_to_sell: 0.10
+  
+  filters:
+    minimum_uk_listings: 3
+    minimum_japan_auctions: 3
+    maximum_vehicle_age: 20
+
+# Cost Calculations
+costs:
+  japan:
+    auction_fee_percent: 8.0
+    transport_to_port_jpy: 25000
+    export_certificate_jpy: 5000
+    radiation_certificate_jpy: 3000
+  
+  shipping:
+    base_freight_gbp: 800
+    suv_surcharge_gbp: 200
+    truck_surcharge_gbp: 400
+    van_surcharge_gbp: 300
+  
+  uk:
+    import_duty_percent: 0.0  # Usually 0% from Japan
+    vat_percent: 20.0
+    port_handling_gbp: 150
+    transport_from_port_gbp: 200
+    iva_test_gbp: 250
+    registration_fees_gbp: 55
+  
+  conversion:
+    speedometer_gbp: 150
+    fog_lights_gbp: 100
+    side_mirrors_gbp: 50
+    headlight_adjustment_gbp: 75
+    compliance_modern_gbp: 200  # Additional for 2015+ vehicles
+
+# Dashboard Settings
+dashboard:
+  port: 5000
+  host: "0.0.0.0"
+  debug: false
+  auto_refresh_minutes: 30
+  
+  pagination:
+    default_page_size: 20
+    max_page_size: 100
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  file_max_size_mb: 10
+  backup_count: 5
+  log_directory: "logs"
+
+# Alert Thresholds
+alerts:
+  high_profit_margin: 25.0
+  low_competition_threshold: 5  # number of competing listings
+  fast_selling_days: 14
+  data_freshness_hours: 12  # Alert if data is older than this
+
