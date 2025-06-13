@@ -1,6 +1,8 @@
 """
 Main application entry point for Vehicle Import Analysis System
 """
+import sys
+import os
 import asyncio
 import logging
 from datetime import datetime, timedelta
@@ -8,19 +10,34 @@ import schedule
 import time
 from threading import Thread
 
-from utils.config import Config
-from utils.logger import setup_logger
-from data_processing.data_collector import DataCollector
-from data_processing.scoring_engine import ScoringEngine
-from dashboard.app import create_app
+# Add current directory to path for imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+try:
+    from src.utils.config import Config
+    from src.utils.logger import setup_logger
+    from src.data_processing.data_collector import DataCollector
+    from src.data_processing.scoring_engine import ScoringEngine
+    from src.dashboard.app import create_app
+except ImportError as e:
+    print(f"Import error: {e}")
+    print("Please ensure all modules are in the src directory")
+    sys.exit(1)
 
 logger = setup_logger(__name__)
 
 class VehicleImportAnalyzer:
     def __init__(self):
-        self.config = Config()
-        self.data_collector = DataCollector()
-        self.scoring_engine = ScoringEngine()
+        try:
+            self.config = Config()
+            self.data_collector = DataCollector()
+            self.scoring_engine = ScoringEngine()
+            logger.info("VehicleImportAnalyzer initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize VehicleImportAnalyzer: {e}")
+            raise
         
     async def run_analysis_pipeline(self):
         """Main analysis pipeline"""
@@ -55,20 +72,49 @@ class VehicleImportAnalyzer:
 
     def run_scheduled_update(self):
         """Run scheduled data updates"""
-        asyncio.run(self.run_analysis_pipeline())
+        try:
+            asyncio.run(self.run_analysis_pipeline())
+        except Exception as e:
+            logger.error(f"Scheduled update failed: {e}")
 
     def run_daily_analysis(self):
         """Run comprehensive daily analysis"""
-        asyncio.run(self.run_analysis_pipeline())
+        try:
+            asyncio.run(self.run_analysis_pipeline())
+        except Exception as e:
+            logger.error(f"Daily analysis failed: {e}")
+
+def main():
+    """Main function"""
+    try:
+        print("🚀 Vehicle Import Analyzer Starting...")
+        
+        analyzer = VehicleImportAnalyzer()
+        print("✅ Analyzer initialized")
+        
+        # Start Flask dashboard in separate thread
+        app = create_app()
+        print("✅ Dashboard created")
+        
+        dashboard_thread = Thread(
+            target=lambda: app.run(host='0.0.0.0', port=5000, debug=False),
+            daemon=True
+        )
+        dashboard_thread.start()
+        
+        print("🌐 Dashboard started on http://localhost:5000")
+        print("   Press Ctrl+C to stop")
+        
+        # Start scheduled updates
+        analyzer.schedule_updates()
+        
+    except KeyboardInterrupt:
+        logger.info("Application stopped by user")
+        print("\n👋 Application stopped")
+    except Exception as e:
+        logger.error(f"Application failed to start: {str(e)}")
+        print(f"❌ Error: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    analyzer = VehicleImportAnalyzer()
-    
-    # Start Flask dashboard in separate thread
-    app = create_app()
-    dashboard_thread = Thread(target=lambda: app.run(host='0.0.0.0', port=5000))
-    dashboard_thread.daemon = True
-    dashboard_thread.start()
-    
-    # Start scheduled updates
-    analyzer.schedule_updates()
+    main()
